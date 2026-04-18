@@ -27,7 +27,7 @@ app.get('/api/tasks', async (req, res) => {
 });
 
 app.post('/api/tasks', async (req, res) => {
-  const task = new Task({ title: req.body.title });
+  const task = new Task({ title: req.body.title, priority: req.body.priority });
   await task.save();
   res.json(task);
 });
@@ -36,7 +36,7 @@ app.put('/api/tasks/:id', async (req, res) => {
   const task = await Task.findByIdAndUpdate(
     req.params.id,
     { completed: req.body.completed },
-    { new: true }
+    { returnDocument: "after" }
   );
   res.json(task);
 });
