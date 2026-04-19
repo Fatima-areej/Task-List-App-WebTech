@@ -14,8 +14,10 @@ mongoose.connect(process.env.MONGO_URI)
 // Task Model
 const taskSchema = new mongoose.Schema({
   title:     { type: String, required: true },
-  priority:  { type: String, default: "low" },  
+  priority:  { type: String, default: "low" },
+  dueAt:     { type: Date, default: null },
   completed: { type: Boolean, default: false },
+  completedLate: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 const Task = mongoose.model('Task', taskSchema);
@@ -27,18 +29,34 @@ app.get('/api/tasks', async (req, res) => {
 });
 
 app.post('/api/tasks', async (req, res) => {
-  const task = new Task({ title: req.body.title, priority: req.body.priority });
+  let dueAt = null;
+  if (req.body.dueAt) {
+    const d = new Date(req.body.dueAt);
+    if (!isNaN(d.getTime())) dueAt = d;
+  }
+  const task = new Task({ title: req.body.title, priority: req.body.priority, dueAt });
   await task.save();
   res.json(task);
 });
 
 app.put('/api/tasks/:id', async (req, res) => {
-  const task = await Task.findByIdAndUpdate(
-    req.params.id,
-    { completed: req.body.completed },
-    { returnDocument: "after" }
-  );
+  const existing = await Task.findById(req.params.id);
+  if (!existing) return res.status(404).json(null);
+  const completed = req.body.completed;
+  const update = { completed };
+  if (completed && !existing.completed && existing.dueAt) {
+    update.completedLate = new Date(existing.dueAt).getTime() < Date.now();
+  } else if (!completed) {
+    update.completedLate = false;
+  }
+  const task = await Task.findByIdAndUpdate(req.params.id, update, { returnDocument: "after" });
   res.json(task);
+});
+
+// Must be before `/:id` so "clear-all" is not parsed as an id
+app.delete('/api/tasks/clear-all', async (req, res) => {
+  await Task.deleteMany({});
+  res.json({ message: 'All tasks removed' });
 });
 
 app.delete('/api/tasks/:id', async (req, res) => {

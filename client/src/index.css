@@ -1,2 +1,24 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Georgia', serif; background: #fafaf8; }
+body { font-family: 'Georgia', serif; background: #fff; color: #000; }
+
+.task-late-done-minimal {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-left: 4px solid #000 !important;
+}
+
+.task-late-done-arcade {
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.45) !important;
+}
+
+.task-overdue-arcade {
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.65), 0 0 18px rgba(239, 68, 68, 0.45) !important;
+}
+
+@keyframes taskOverduePulseArcade {
+  0%, 100% {
+    box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.5), 0 0 12px rgba(239, 68, 68, 0.35);
+  }
+  50% {
+    box-shadow: inset 0 0 0 2px rgba(252, 165, 165, 0.9), 0 0 22px rgba(239, 68, 68, 0.55);
+  }
+}
